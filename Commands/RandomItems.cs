@@ -4,14 +4,16 @@ using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
 using Exiled.API.Features;
+using Exiled.Permissions.Extensions;
 
 namespace RandomItems.Commands
 {
+    [CommandHandler(typeof(RemoteAdminCommandHandler))]
     class RandomItems : ICommand, IUsageProvider
     {
         public string Command => "randomitems";
 
-        public string[] Aliases => new string[] { "" };
+        public string[] Aliases => new string[] { "ri" };
 
         public string Description => "Gives a random item to the specified team.";
 
@@ -19,6 +21,11 @@ namespace RandomItems.Commands
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
+            if (Permissions.CheckPermission(Player.Get(sender), "randomitems"))
+            {
+                response = "You don't have permission to use this command.";
+                return false;
+            }
             if(arguments.Count() != 1)
             {
                 response = "Incorrect usage.";
@@ -29,14 +36,15 @@ namespace RandomItems.Commands
                 response = "<b>Possible teams:</b>\n - CDP (ClassDPersonnel)\n - CHI (ChaosInsurgency)\n - MTF (MTF)\n - RSC(Researchers)";
                 return false;
             }
-            bool parsedCorrectly = Enum.TryParse(arguments.At(0), out Team team);
+            //string input = ;
+            bool parsedCorrectly = Enum.TryParse(arguments.At(0).ToUpper(), out Team team);
             if (!parsedCorrectly)
             {
                 response = "Couldn't parse team name.";
                 return false;
             }
             var teamPlayers = Player.Get(team);
-            Log.Info($"Team: {teamPlayers}");
+            Log.Info($"Team: {teamPlayers.ToList()}");
             ItemType[] itemsArray = (ItemType[])Enum.GetValues(typeof(ItemType));
             List<ItemType> itemsList = itemsArray.ToList();
             itemsList.Remove(ItemType.None);
