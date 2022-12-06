@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CommandSystem;
 using Exiled.API.Enums;
 using Exiled.API.Features;
@@ -13,34 +15,39 @@ namespace RandomItems.Commands
 
         public string Description => "Gives a random item to the specified team.";
 
-        public string[] Usage => new string[] { "" };
+        public string[] Usage => new string[] { "Team", "use <b><u>teams</u></b> to see all teams" };
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            bool parsedCorrectly = Enum.TryParse(arguments.At(0), out Team team);
-            if(parsedCorrectly)
+            if(arguments.Count() != 1)
             {
-                var teamPlayers = Player.Get(team);
-                Log.Info($"Team: {teamPlayers}");
-                ItemType[] itemsArray = Enum.GetValues(typeof(ItemType)).ToArray<ItemType>();
-                for(int i = 0; i < itemsArray.Length; i++)
-                {
-                    if(itemsArray. == ItemType.None)
-                    {
-
-                    }
-                }
-                ItemType item = itemsArray.SetValue itemsArray.IndexOf(ItemType.None)] [UnityEngine.Random.Range(0, Enum.GetValues(typeof(ItemType)).Length)];
-                Log.Info($"Item: {item}");
-                foreach(Player pl in teamPlayers)
-                {
-                    pl.AddItem(item);
-                }
-                response = "Successfuly added items.";
-                return true;
+                response = "Incorrect usage.";
+                return false;
             }
-            response = "Couldn't parse team name.";
-            return false;
+            if(arguments.At(0).ToLower() == "teams")
+            {
+                response = "<b>Possible teams:</b>\n - CDP (ClassDPersonnel)\n - CHI (ChaosInsurgency)\n - MTF (MTF)\n - RSC(Researchers)";
+                return false;
+            }
+            bool parsedCorrectly = Enum.TryParse(arguments.At(0), out Team team);
+            if (!parsedCorrectly)
+            {
+                response = "Couldn't parse team name.";
+                return false;
+            }
+            var teamPlayers = Player.Get(team);
+            Log.Info($"Team: {teamPlayers}");
+            ItemType[] itemsArray = (ItemType[])Enum.GetValues(typeof(ItemType));
+            List<ItemType> itemsList = itemsArray.ToList();
+            itemsList.Remove(ItemType.None);
+            ItemType item = itemsList.RandomItem();
+            Log.Info($"Item: {item}");
+            foreach (Player pl in teamPlayers)
+            {
+                pl.AddItem(item);
+            }
+            response = "Successfuly added items.";
+            return true;
         }
     }
 }
