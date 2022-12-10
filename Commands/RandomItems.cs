@@ -21,7 +21,7 @@ namespace RandomItems.Commands
 
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            if (Permissions.CheckPermission(Player.Get(sender), "randomitems"))
+            if (!Permissions.CheckPermission(Player.Get(sender), "ri.randomitems"))
             {
                 response = "You don't have permission to use this command.";
                 return false;
@@ -36,7 +36,6 @@ namespace RandomItems.Commands
                 response = "<b>Possible teams:</b>\n - CDP (ClassDPersonnel)\n - CHI (ChaosInsurgency)\n - MTF (MTF)\n - RSC(Researchers)";
                 return false;
             }
-            //string input = ;
             bool parsedCorrectly = Enum.TryParse(arguments.At(0).ToUpper(), out Team team);
             if (!parsedCorrectly)
             {
@@ -44,12 +43,10 @@ namespace RandomItems.Commands
                 return false;
             }
             var teamPlayers = Player.Get(team);
-            Log.Info($"Team: {teamPlayers.ToList()}");
             ItemType[] itemsArray = (ItemType[])Enum.GetValues(typeof(ItemType));
             List<ItemType> itemsList = itemsArray.ToList();
             itemsList.Remove(ItemType.None);
             ItemType item = itemsList.RandomItem();
-            Log.Info($"Item: {item}");
             foreach (Player pl in teamPlayers)
             {
                 pl.AddItem(item);
